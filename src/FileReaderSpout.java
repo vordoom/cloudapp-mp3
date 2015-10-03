@@ -11,39 +11,41 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
+import com.esotericsoftware.minlog.Log;
 
 public class FileReaderSpout implements IRichSpout {
   private SpoutOutputCollector _collector;
   private TopologyContext context;
+  private BufferedReader fileReader = null;
+  private String filePath = null;
 
+  public FileReaderSpout(String filePath){
+    this.filePath = filePath;
+  }
 
   @Override
-  public void open(Map conf, TopologyContext context,
-                   SpoutOutputCollector collector) {
-
-     /*
-    ----------------------TODO-----------------------
-    Task: initialize the file reader
-
-
-    ------------------------------------------------- */
-
+  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
     this.context = context;
     this._collector = collector;
+
+    try {
+      this.fileReader = new BufferedReader(new FileReader(this.filePath));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
   public void nextTuple() {
+    Utils.sleep(100);
 
-     /*
-    ----------------------TODO-----------------------
-    Task:
-    1. read the next line and emit a tuple for it
-    2. don't forget to sleep when the file is entirely read to prevent a busy-loop
-
-    ------------------------------------------------- */
-
-
+    try {
+      String line = this.fileReader.readLine();
+      this._collector.emit(new Values(line));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -55,12 +57,11 @@ public class FileReaderSpout implements IRichSpout {
 
   @Override
   public void close() {
-   /*
-    ----------------------TODO-----------------------
-    Task: close the file
-
-
-    ------------------------------------------------- */
+    try {
+      this.fileReader.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
   }
 
